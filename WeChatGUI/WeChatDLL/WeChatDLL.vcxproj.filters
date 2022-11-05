@@ -40,11 +40,11 @@
     <Filter Include="WeChat">
       <UniqueIdentifier>{b5165554-402a-4fcd-87d8-a5839711441b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="ApiServer">
-      <UniqueIdentifier>{ce1897ee-ebac-46bf-a9bd-25ca243a8dec}</UniqueIdentifier>
-    </Filter>
     <Filter Include="MyTinySTL">
       <UniqueIdentifier>{08597978-ea79-476c-b97a-bf8d2f6e9135}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ApiServer">
+      <UniqueIdentifier>{ce1897ee-ebac-46bf-a9bd-25ca243a8dec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -109,9 +109,6 @@
       <Filter>Function</Filter>
     </ClCompile>
     <ClCompile Include="Function\微信多开.cpp">
-      <Filter>Function</Filter>
-    </ClCompile>
-    <ClCompile Include="Function\消息上传.cpp">
       <Filter>Function</Filter>
     </ClCompile>
     <ClCompile Include="Function\ContactFunction.cpp">
@@ -201,9 +198,6 @@
       <Filter>Function</Filter>
     </ClInclude>
     <ClInclude Include="Function\微信多开.h">
-      <Filter>Function</Filter>
-    </ClInclude>
-    <ClInclude Include="Function\消息上传.h">
       <Filter>Function</Filter>
     </ClInclude>
     <ClInclude Include="Function\ContactFunction.h">

@@ -7,6 +7,7 @@
 #include "Function/ContactFunction.h"
 #include "Function/MsgMonitor.h"
 #include "Function/SnsFunction.h"
+#include "Function/AccountFunction.h"
 #include "WeChat/common.h"
 #include "Public/Strings.h"
 #include <MyTinySTL/vector.h>
@@ -141,7 +142,6 @@ void Api_sendTextMsgEx(const httplib::Request& req, httplib::Response& res)
 }
 
 //同步消息
-
 void Api_syncMsg(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json retJson;
@@ -168,7 +168,6 @@ void Api_syncMsg(const httplib::Request& req, httplib::Response& res)
 }
 
 //接收朋友圈消息
-
 void Api_syncSns(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json retJson;
@@ -206,15 +205,12 @@ void Api_getLoginUserInfo(const httplib::Request& req, httplib::Response& res)
 }
 
 //获取个人表情列表
-
 void Api_getCustomEmotionList(const httplib::Request& req, httplib::Response& res)
 {
 	
-
 }
 
 //发送个人表情
-
 void Api_sendCustomEmotion(const httplib::Request& req, httplib::Response& res)
 {
 	
@@ -270,7 +266,16 @@ void Api_getHome(const httplib::Request& req, httplib::Response& res)
 	return;
 }
 
-void StartApiServer(unsigned short port)
+void Api_WaitForLogin(const httplib::Request& req, httplib::Response& res)
+{
+	nlohmann::json retJson;
+	std::string userWxid = AccountFunction::Instance().WaitUtilLogin();
+	retJson["code"] = 200;
+	retJson["wxid"] = userWxid;
+	res.set_content(retJson.dump(), "application/json");
+}
+
+void StartApiServer(int port)
 {
 	gWechatInstance = WeChatDLL::Instance().getWinMoudule();
 
@@ -279,23 +284,26 @@ void StartApiServer(unsigned short port)
 	//消息相关
 	svr.Get("/syncMsg", Api_syncMsg);
 	svr.Get("/syncSns", Api_syncSns);
-
 	svr.Post("/sendTextMsg", Api_sendTextMsg);
 	svr.Post("/sendTextMsgEx", Api_sendTextMsgEx);
 	svr.Post("/sendImageMsg", Api_sendImageMsg);
 	svr.Post("/sendFile", Api_SendFile);
 
-
 	//联系人相关
 	svr.Post("/getContactInfo", Api_getContactInfo);
 	//获取通讯录列表
 	svr.Get("/getContactList", Api_getContactList);
-
-
 	svr.Get("/getCustomEmotionList", Api_getCustomEmotionList);
 	svr.Post("/sendCustomEmotion", Api_sendCustomEmotion);
+	svr.Get("/getLoginUserInfo", Api_getLoginUserInfo);
+		
+	//登录相关
+	svr.Get("/waitForLogin", Api_WaitForLogin);
 
 	svr.Get("/", Api_getHome);
-	svr.Get("/getLoginUserInfo", Api_getLoginUserInfo);
-	svr.listen("0.0.0.0",port);
+
+	svr.listen("0.0.0.0", port);
+	if (svr.listen("0.0.0.0", port) == false) {
+		ExitProcess(0xdead);
+	}
 }

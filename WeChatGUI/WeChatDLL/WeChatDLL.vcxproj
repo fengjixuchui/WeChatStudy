@@ -30,7 +30,7 @@
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
-    <CharacterSet>NotSet</CharacterSet>
+    <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
@@ -72,7 +72,7 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>D:\App\WeChat\[3.7.6.44]\</OutDir>
+    <OutDir>C:\App\WeChat\[3.7.6.44]\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
@@ -87,7 +87,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
-      <SDLCheck>true</SDLCheck>
+      <SDLCheck>false</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -159,7 +159,6 @@
     <ClCompile Include="Function\MsgMonitor.cpp" />
     <ClCompile Include="Function\SnsFunction.cpp" />
     <ClCompile Include="Function\微信多开.cpp" />
-    <ClCompile Include="Function\消息上传.cpp" />
     <ClCompile Include="include\AnyCall\AnyCall.cpp" />
     <ClCompile Include="include\MyTinySTL\algobase.cpp" />
     <ClCompile Include="InlineHook\InlineHook.cpp" />
@@ -187,7 +186,6 @@
     <ClInclude Include="Function\MsgMonitor.h" />
     <ClInclude Include="Function\SnsFunction.h" />
     <ClInclude Include="Function\微信多开.h" />
-    <ClInclude Include="Function\消息上传.h" />
     <ClInclude Include="include\AnyCall\AnyCall.h" />
     <ClInclude Include="include\MyTinySTL\algo.h" />
     <ClInclude Include="include\MyTinySTL\algobase.h" />
