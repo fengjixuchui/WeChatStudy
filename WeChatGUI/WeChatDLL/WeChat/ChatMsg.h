@@ -3,9 +3,7 @@
 #include <windows.h>
 #include <string>
 
-
 #pragma pack (push,1)
-
 struct ConfigInfoStorage
 {
 	int field_0;
@@ -80,7 +78,10 @@ struct MixExtra
 };
 
 
-//大小为0x2A0
+//3.7.6.44,大小为0x2A0
+//3.8.0.33,大小为0x2A8
+//如何判断结构体大小,MsgMergeMgr::mergeSendMsgs
+//不同版本有不同的大小,这里取最大值
 struct ChatMsg
 {
 	int vTable;
@@ -171,10 +172,12 @@ struct ChatMsg
 	int field_290;
 	int field_294;
 	int field_298;
+	int field_29C;
+	int field_2A0;
 };
 #pragma pack(pop)
 
-struct ChatMsgX:public ChatMsg
+struct ChatMsgX :public ChatMsg
 {
 public:
 	ChatMsgX();
@@ -187,10 +190,10 @@ struct MyChatMsg
 	unsigned long long msgID;	//消息id
 	bool IsOwner;				//消息是否为自己发送
 	unsigned int CreateTime;	//消息时间戳
-	std::string FromUserName;	//消息来源,微信群wxid
-	std::string sendWxid;		//发送者的wxid
-	std::string msgContent;		//消息内容
-	std::string imagePath;		//图片消息路径
+	std::wstring FromUserName;	//消息来源,微信群wxid
+	std::wstring sendWxid;		//发送者的wxid
+	std::wstring msgContent;		//消息内容
+	std::wstring imagePath;		//图片消息路径
 };
 
 MyChatMsg CopyChatMsg(ChatMsg* pChatMsg);

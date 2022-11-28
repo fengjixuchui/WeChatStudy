@@ -227,6 +227,7 @@ struct TimelineMsg
 };
 
 //结构体大小为0xB48
+//如何判断结构体大小,SnsTimeLineMgr::OnSnsTimeLineSceneFinish
 struct TimelineResp
 {
 	unsigned long long id;
@@ -240,8 +241,8 @@ struct MySnsMedia
 {
 	unsigned long long id;
 	unsigned int type;
-	std::string description;
-	std::string url;
+	std::wstring description;
+	std::wstring url;
 };
 
 struct MyTimeLineResp
@@ -251,13 +252,13 @@ struct MyTimeLineResp
 	//消息发送时间
 	unsigned int sendTime;
 	//消息发送者的名称
-	std::string sendWxid;
+	std::wstring sendWxid;
 	//消息显示内容
-	std::string content;
+	std::wstring content;
 	//描述
-	std::string title;
-	std::string description;
-	std::string contentUrl;
+	std::wstring title;
+	std::wstring description;
+	std::wstring contentUrl;
 	//多媒体
 	std::vector<MySnsMedia> mediaList;
 };

@@ -9,24 +9,31 @@ MyChatMsg CopyChatMsg(ChatMsg* pChatMsg)
 	ret.msgType = pChatMsg->msgType;
 	ret.msgID = pChatMsg->newMsgId;
 	ret.IsOwner = pChatMsg->isOwner;
-	ret.FromUserName = UnicodeToAnsi(copyMMString(&pChatMsg->fromUserName).c_str());
+	ret.FromUserName = copyMMString(&pChatMsg->fromUserName);
 	if (!pChatMsg->isOwner) {
-		ret.sendWxid = UnicodeToAnsi(copyMMString(&pChatMsg->mixExtra.sendWxid).c_str());
+		ret.sendWxid = copyMMString(&pChatMsg->mixExtra.sendWxid);
 	}
-	ret.msgContent = UnicodeToAnsi(copyMMString(&pChatMsg->msgContent).c_str());
+	ret.msgContent = copyMMString(&pChatMsg->msgContent);
 	ret.CreateTime = pChatMsg->createTime;
-	ret.imagePath = UnicodeToAnsi(copyMMString(&pChatMsg->mixExtra.imagePath).c_str());
+	ret.imagePath = copyMMString(&pChatMsg->mixExtra.imagePath);
 	return ret;
 }
 
 ChatMsgX::ChatMsgX()
 {
-
+	
 }
 
+//如何找到析构函数,AppMsgMgr::sendFile
 ChatMsgX::~ChatMsgX()
 {
-	if (WeChatDLL::Instance().getWechatVersion() == WeChat_3_7_6_44) {
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
 		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0x131EB0));
+		return;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0x651C40));
+		return;
 	}
+
 }

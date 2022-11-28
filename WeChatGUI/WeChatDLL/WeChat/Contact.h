@@ -3,6 +3,7 @@
 #include "common.h"
 
 //微信原始结构体,大小为0x3E8
+//如何判断结构体大小,ContactMgr::GetNormalContactList
 struct Contact
 {
 	DWORD vtable;
@@ -196,11 +197,11 @@ public:
 //转换结构体
 struct MyContact
 {
-	std::string userName;
-	std::string alias;
-	std::string encryptUserName;
-	std::string remark;
-	std::string nickName;
+	std::wstring userName;
+	std::wstring alias;
+	std::wstring encryptUserName;
+	std::wstring remark;
+	std::wstring nickName;
 };
 
 MyContact copyContact(Contact* pContact);

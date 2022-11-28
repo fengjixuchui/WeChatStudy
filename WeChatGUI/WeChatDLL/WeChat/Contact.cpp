@@ -6,25 +6,35 @@
 MyContact copyContact(Contact* pContact)
 {
 	MyContact ret;
-	ret.userName = UnicodeToAnsi(copyMMString(&pContact->userName).c_str());
-	ret.alias = UnicodeToAnsi(copyMMString(&pContact->alias).c_str());
-	ret.encryptUserName = UnicodeToAnsi(copyMMString(&pContact->encryptUserName).c_str());
-	ret.remark = UnicodeToAnsi(copyMMString(&pContact->remark).c_str());
-	ret.nickName = UnicodeToAnsi(copyMMString(&pContact->nickName).c_str());
+	ret.userName = copyMMString(&pContact->userName);
+	ret.alias = copyMMString(&pContact->alias);
+	ret.encryptUserName = copyMMString(&pContact->encryptUserName);
+	ret.remark = copyMMString(&pContact->remark);
+	ret.nickName = copyMMString(&pContact->nickName);
 	return ret;
 }
 
 Contact::Contact()
 {
-	if (WeChatDLL::Instance().getWechatVersion() == WeChat_3_7_6_44) {
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
 		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0x76CBC0));
+		return;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0xD10690));
+		return;
 	}
 }
 
 void Contact::free()
 {
-	if (WeChatDLL::Instance().getWechatVersion() == WeChat_3_7_6_44) {
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
 		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0x76D6C0));
+		return;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeThiscall<void>((void*)this, (void*)(WeChatDLL::Instance().getWinMoudule() + 0xD11190));
+		return;
 	}
 }
 

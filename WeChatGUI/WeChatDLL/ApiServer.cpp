@@ -10,26 +10,47 @@
 #include "Function/AccountFunction.h"
 #include "WeChat/common.h"
 #include "Public/Strings.h"
+#include "public/Public.h"
 #include <MyTinySTL/vector.h>
 
 unsigned int gWechatInstance;
 
+//如何找到此函数,FavoriteMgr::init
 void* SendMessageMgr_Instance()
 {
-	return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x141890));
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x141890));
+	case WeChat_3_8_0_33:
+		return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x663320));
+	default:
+		break;
+	}
+	return NULL;
 }
 
+//如何找到此函数,FavoriteMgr::init
 void* AppMsgMgr_Instance()
 {
-	return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x1442E0));
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x1442E0));
+	case WeChat_3_8_0_33:
+		return AnyCall::invokeStdcall<void*>((void*)(WeChatDLL::Instance().getWinMoudule() + 0x665F60));
+	default:
+		break;
+	}
+	return NULL;
 }
 
+
+//如何找到此函数,ChatViewModel::batchSendMsg,case 3
 void Api_SendFile(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json json = nlohmann::json::parse(req.body);
 	nlohmann::json retJson;
-	std::string toWxid = json["to_wxid"].get<std::string>();
-	std::string msgContent = json["file_path"].get<std::string>();
+	std::wstring toWxid = Utf8ToUnicode(json["to_wxid"].get<std::string>().c_str());
+	std::wstring msgContent = Utf8ToUnicode(json["file_path"].get<std::string>().c_str());
 	if (toWxid.empty() || msgContent.empty()) {
 		retJson["code"] = 201;
 		retJson["msg"] = "empty param";
@@ -39,22 +60,33 @@ void Api_SendFile(const httplib::Request& req, httplib::Response& res)
 	ChatMsgX retChatMsg;
 	memset(&retChatMsg, 0x0, sizeof(ChatMsgX));
 	mmStringX sendWxid, filepath, unknowFiled1,unknowField2;
-	sendWxid.assignUTF8(toWxid.c_str());
-	filepath.assignUTF8(msgContent.c_str());
-	AnyCall::invokeThiscall<void>(AppMsgMgr_Instance(), (void*)(gWechatInstance + 0x479B30), &retChatMsg,
-		sendWxid, filepath, unknowFiled1, 0, unknowField2);
+	sendWxid.assign(toWxid.c_str(), toWxid.length());
+	filepath.assign(msgContent.c_str(), msgContent.length());
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		AnyCall::invokeThiscall<void>(AppMsgMgr_Instance(), (void*)(gWechatInstance + 0x479B30), &retChatMsg,
+			sendWxid, filepath, unknowFiled1, 0, unknowField2);
+		break;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeThiscall<void>(AppMsgMgr_Instance(), (void*)(gWechatInstance + 0xA0D0A0), &retChatMsg,
+			sendWxid, filepath, unknowFiled1, 0, unknowField2);
+		break;
+	}
+
 	retJson["code"] = 200;
 	retJson["msg"] = "send ok";
 	res.set_content(retJson.dump(), "application/json");
 	return;
 }
 
+
+//如何找到此函数,ChatViewModel::batchSendMsg,case 2
 void Api_sendImageMsg(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json json = nlohmann::json::parse(req.body);
 	nlohmann::json retJson;
-	std::string toWxid = json["to_wxid"].get<std::string>();
-	std::string msgContent = json["image_path"].get<std::string>();
+	std::wstring toWxid = Utf8ToUnicode(json["to_wxid"].get<std::string>().c_str());
+	std::wstring msgContent = Utf8ToUnicode(json["image_path"].get<std::string>().c_str());
 	if (toWxid.empty() || msgContent.empty()) {
 		retJson["code"] = 201;
 		retJson["msg"] = "empty param";
@@ -64,22 +96,33 @@ void Api_sendImageMsg(const httplib::Request& req, httplib::Response& res)
 	ChatMsgX retChatMsg;
 	memset(&retChatMsg, 0x0, sizeof(ChatMsgX));
 	mmStringX sendWxid, imagePath, unknowFiled;
-	sendWxid.assignUTF8(toWxid.c_str());
-	imagePath.assignUTF8(msgContent.c_str());
-	AnyCall::invokeThiscall<void>(SendMessageMgr_Instance(), (void*)(gWechatInstance + 0x5CCDD0), &retChatMsg,
-		&sendWxid, &imagePath, unknowFiled);
+	sendWxid.assign(toWxid.c_str(), toWxid.length());
+	imagePath.assign(msgContent.c_str(), msgContent.length());
+
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		AnyCall::invokeThiscall<void>(SendMessageMgr_Instance(), (void*)(gWechatInstance + 0x5CCDD0), &retChatMsg,
+			&sendWxid, &imagePath, unknowFiled);
+		break;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeThiscall<void>(SendMessageMgr_Instance(), (void*)(gWechatInstance + 0xB686B0), &retChatMsg,
+			&sendWxid, &imagePath, unknowFiled);
+		break;
+	}
+
 	retJson["code"] = 200;
 	retJson["msg"] = "send ok";
 	res.set_content(retJson.dump(), "application/json");
 	return;
 }
 
+//如何找到此函数,ChatViewModel::batchSendMsg,case 1
 void Api_sendTextMsg(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json json = nlohmann::json::parse(req.body);
 	nlohmann::json retJson;
-	std::string toWxid = json["to_wxid"].get<std::string>();
-	std::string msgContent = json["msg"].get<std::string>();
+	std::wstring toWxid = Utf8ToUnicode(json["to_wxid"].get<std::string>().c_str());
+	std::wstring msgContent = Utf8ToUnicode(json["msg"].get<std::string>().c_str());
 	if (toWxid.empty() || msgContent.empty()) {
 		retJson["code"] = 201;
 		retJson["msg"] = "empty param";
@@ -88,10 +131,19 @@ void Api_sendTextMsg(const httplib::Request& req, httplib::Response& res)
 	}
 	ChatMsgX objMsg;
 	mmStringX sendWxid, sendMsg;
-	sendWxid.assignUTF8(toWxid.c_str());
-	sendMsg.assignUTF8(msgContent.c_str());
+	sendWxid.assign(toWxid.c_str(), toWxid.length());
+	sendMsg.assign(msgContent.c_str(), msgContent.length());
 	mystl::vector<mmStringX> atUserList;
-	AnyCall::invokeAnycall(&objMsg, &sendWxid, (void*)(gWechatInstance + 0x5CD2E0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		AnyCall::invokeAnycall(&objMsg, &sendWxid, (void*)(gWechatInstance + 0x5CD2E0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+		break;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeAnycall(&objMsg, &sendWxid, (void*)(gWechatInstance + 0xB68BC0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+		break;
+	}
+
 	retJson["code"] = 200;
 	retJson["msg"] = "send ok";
 	res.set_content(retJson.dump(), "application/json");
@@ -105,36 +157,46 @@ void Api_sendTextMsgEx(const httplib::Request& req, httplib::Response& res)
 	mmStringX toWxid;
 	toWxid.assignUTF8(json["to_wxid"].get<std::string>().c_str());
 	mystl::vector<mmStringX> atUserList;
-	std::string msgContent;
+	std::wstring msgContent;
 	auto msgList = json["msg_list"];
 	for (unsigned int n = 0; n < msgList.size(); ++n) {
 		int msgType = msgList[n]["type"];
 		//普通文本
 		if (msgType == 0) {
 			std::string msg = msgList[n]["msg"];
-			msgContent.append(msg);
+			msgContent.append(Utf8ToUnicode(msg.c_str()));
 		}
 		//@用户
 		else if (msgType == 1) {
-			std::string strAtUser = msgList[n]["atUser"];
-			std::string nickName = msgList[n]["nickName"];
-			if (strAtUser == "notify@all") {
-				nickName = LocalCpToUtf8("所有人");
+			std::string tmpAtUser = msgList[n]["atUser"];
+			std::string tmpNickName = msgList[n]["nickName"];
+			std::wstring strAtUser = Utf8ToUnicode(tmpAtUser.c_str());
+			std::wstring nickName = Utf8ToUnicode(tmpNickName.c_str());
+			if (strAtUser == L"notify@all") {
+				nickName = L"所有人";
 			}
 			else if (nickName.empty()) {
 				nickName = ContactModule::Instance().GetContactInfoDynamic(strAtUser).nickName;
-				nickName = LocalCpToUtf8(nickName.c_str());
 			}
-			msgContent.append("@" + nickName + " ");
+			msgContent.append(L"@" + nickName + L" ");
 			mmStringX mmStrAtUser;
-			mmStrAtUser.assignUTF8(strAtUser.c_str());
+			mmStrAtUser.assign(strAtUser.c_str(), strAtUser.length());
 			atUserList.push_back(mmStrAtUser);
 		}
 	}
 	ChatMsgX objMsg;
 	mmStringX sendMsg;
-	sendMsg.assignUTF8(msgContent.c_str());
-	AnyCall::invokeAnycall(&objMsg, &toWxid, (void*)(gWechatInstance + 0x5CD2E0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+	sendMsg.assign(msgContent.c_str(), msgContent.length());
+
+	switch (WeChatDLL::Instance().getWechatVersion()) {
+	case WeChat_3_7_6_44:
+		AnyCall::invokeAnycall(&objMsg, &toWxid, (void*)(gWechatInstance + 0x5CD2E0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+		break;
+	case WeChat_3_8_0_33:
+		AnyCall::invokeAnycall(&objMsg, &toWxid, (void*)(gWechatInstance + 0xB68BC0), &sendMsg, &atUserList, (void*)1, 0, 0x0);
+		break;
+	}
+
 	retJson["code"] = 200;
 	retJson["msg"] = "send ok";
 	res.set_content(retJson.dump(), "application/json");
@@ -142,25 +204,14 @@ void Api_sendTextMsgEx(const httplib::Request& req, httplib::Response& res)
 }
 
 //同步消息
+
 void Api_syncMsg(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json retJson;
 	std::vector<MsgUploadInfo> msgList = MsgMonitor::Instance().SyncMsg();
 	nlohmann::json &jsonData = retJson["data"];
 	for (unsigned int n = 0; n < msgList.size(); ++n) {
-		nlohmann::json tmp;
-		tmp["msg_type"] = msgList[n].msgType;
-		tmp["msg_id"] = msgList[n].msgID;
-		tmp["sender_name"] = msgList[n].senderName;
-		tmp["sender_wxid"] = msgList[n].senderWxid;
-		tmp["msg_content"] = msgList[n].msgContent;
-		if (!msgList[n].wxid.empty()) {
-			tmp["wxid"] = msgList[n].wxid;
-			tmp["name"] = msgList[n].name;
-		}
-		tmp["robot_id"] = msgList[n].robotID;
-		tmp["post_time"] = msgList[n].postTime;
-		jsonData.push_back(tmp);
+		jsonData.push_back(msgList[n].msg);
 	}
 	retJson["code"] = 200;
 	res.set_content(retJson.dump(), "application/json");
@@ -177,18 +228,18 @@ void Api_syncSns(const httplib::Request& req, httplib::Response& res)
 		nlohmann::json tmp;
 		tmp["id"] = msgList[n].id;
 		tmp["post_time"] = msgList[n].sendTime;
-		tmp["sender_wxid"] = LocalCpToUtf8(msgList[n].sendWxid.c_str());
-		tmp["sender_name"] = LocalCpToUtf8(ContactModule::Instance().GetContactInfoDynamic(msgList[n].sendWxid).nickName.c_str());
-		tmp["content"] = LocalCpToUtf8(msgList[n].content.c_str());
-		tmp["title"] = LocalCpToUtf8(msgList[n].title.c_str());
-		tmp["description"] = LocalCpToUtf8(msgList[n].description.c_str());
-		tmp["content_url"] = LocalCpToUtf8(msgList[n].contentUrl.c_str());
+		tmp["sender_wxid"] = UnicodeToUtf8(msgList[n].sendWxid.c_str());
+		tmp["sender_name"] = UnicodeToUtf8(ContactModule::Instance().GetContactInfoDynamic(msgList[n].sendWxid).nickName.c_str());
+		tmp["content"] = UnicodeToUtf8(msgList[n].content.c_str());
+		tmp["title"] = UnicodeToUtf8(msgList[n].title.c_str());
+		tmp["description"] = UnicodeToUtf8(msgList[n].description.c_str());
+		tmp["content_url"] = UnicodeToUtf8(msgList[n].contentUrl.c_str());
 		nlohmann::json& jsonMedia = tmp["media"];
 		for (unsigned int m = 0; m < msgList[n].mediaList.size(); ++m) {
 			nlohmann::json tmpMedia;
 			tmpMedia["id"] = msgList[n].mediaList[m].id;
 			tmpMedia["type"] = msgList[n].mediaList[m].type;
-			tmpMedia["url"] = msgList[n].mediaList[m].url;
+			tmpMedia["url"] = UnicodeToUtf8(msgList[n].mediaList[m].url.c_str());
 			jsonMedia.push_back(tmpMedia);
 		}
 		jsonData.push_back(tmp);
@@ -223,13 +274,13 @@ void Api_getContactInfo(const httplib::Request& req, httplib::Response& res)
 	nlohmann::json& jsonData = retJson["data"];
 	for (unsigned int n = 0; n < json.size(); ++n) {
 		std::string userName = json[n];
-		auto contantInfo = ContactModule::Instance().GetContactInfoDynamic(userName);
+		auto contantInfo = ContactModule::Instance().GetContactInfoDynamic(Utf8ToUnicode(userName.c_str()));
 		nlohmann::json tmp;
-		tmp["username"] = LocalCpToUtf8(contantInfo.userName.c_str());
-		tmp["alias"] = LocalCpToUtf8(contantInfo.alias.c_str());
-		tmp["encrypt_username"] = LocalCpToUtf8(contantInfo.encryptUserName.c_str());
-		tmp["remark"] = LocalCpToUtf8(contantInfo.remark.c_str());
-		tmp["nickname"] = LocalCpToUtf8(contantInfo.nickName.c_str());
+		tmp["username"] = UnicodeToUtf8(contantInfo.userName.c_str());
+		tmp["alias"] = UnicodeToUtf8(contantInfo.alias.c_str());
+		tmp["encrypt_username"] = UnicodeToUtf8(contantInfo.encryptUserName.c_str());
+		tmp["remark"] = UnicodeToUtf8(contantInfo.remark.c_str());
+		tmp["nickname"] = UnicodeToUtf8(contantInfo.nickName.c_str());
 		jsonData.push_back(tmp);
 	}
 	retJson["code"] = 200;
@@ -245,11 +296,11 @@ void Api_getContactList(const httplib::Request& req, httplib::Response& res)
 	for (unsigned int n = 0; n < contactList.size(); ++n) {
 		nlohmann::json tmp;
 		MyContact& contantInfo = contactList[n];
-		tmp["username"] = LocalCpToUtf8(contantInfo.userName.c_str());
-		tmp["alias"] = LocalCpToUtf8(contantInfo.alias.c_str());
-		tmp["encrypt_username"] = LocalCpToUtf8(contantInfo.encryptUserName.c_str());
-		tmp["remark"] = LocalCpToUtf8(contantInfo.remark.c_str());
-		tmp["nickname"] = LocalCpToUtf8(contantInfo.nickName.c_str());
+		tmp["username"] = UnicodeToUtf8(contantInfo.userName.c_str());
+		tmp["alias"] = UnicodeToUtf8(contantInfo.alias.c_str());
+		tmp["encrypt_username"] = UnicodeToUtf8(contantInfo.encryptUserName.c_str());
+		tmp["remark"] = UnicodeToUtf8(contantInfo.remark.c_str());
+		tmp["nickname"] = UnicodeToUtf8(contantInfo.nickName.c_str());
 		jsonData.push_back(tmp);
 	}
 	retJson["code"] = 200;
@@ -266,12 +317,26 @@ void Api_getHome(const httplib::Request& req, httplib::Response& res)
 	return;
 }
 
+void Api_GetgetLoginQRCode(const httplib::Request& req, httplib::Response& res)
+{
+	nlohmann::json retJson;
+	std::vector<unsigned char> QRCodeImg;
+	if (!AccountFunction::Instance().getLoginQRCode(QRCodeImg)) {
+		retJson["code"] = 201;
+	}
+	else {
+		retJson["code"] = 200;
+		retJson["qrcode"] = base64_encode(QRCodeImg);
+	}
+	res.set_content(retJson.dump(), "application/json");
+}
+
 void Api_WaitForLogin(const httplib::Request& req, httplib::Response& res)
 {
 	nlohmann::json retJson;
-	std::string userWxid = AccountFunction::Instance().WaitUtilLogin();
+	std::wstring userWxid = AccountFunction::Instance().WaitUtilLogin();
 	retJson["code"] = 200;
-	retJson["wxid"] = userWxid;
+	retJson["wxid"] = UnicodeToUtf8(userWxid.c_str());
 	res.set_content(retJson.dump(), "application/json");
 }
 
@@ -296,8 +361,9 @@ void StartApiServer(int port)
 	svr.Get("/getCustomEmotionList", Api_getCustomEmotionList);
 	svr.Post("/sendCustomEmotion", Api_sendCustomEmotion);
 	svr.Get("/getLoginUserInfo", Api_getLoginUserInfo);
-		
+	
 	//登录相关
+	svr.Get("/getLoginQRCode", Api_GetgetLoginQRCode);
 	svr.Get("/waitForLogin", Api_WaitForLogin);
 
 	svr.Get("/", Api_getHome);
